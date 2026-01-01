@@ -133,8 +133,22 @@
                 <div class="space-y-4">
                     <input type="email" id="email" placeholder="Email"
                         class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/50 outline-none border border-transparent focus:border-blue-500">
-                    <input type="password" id="password" placeholder="Password"
-                        class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/50 outline-none border border-transparent focus:border-blue-500">
+                    <div class="relative group">
+                        <input type="password" id="password" placeholder="Password"
+                            class="w-full p-4 pl-4 pr-24 rounded-2xl bg-slate-100 dark:bg-slate-900/50 outline-none border border-transparent focus:border-blue-500">
+
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                            <button onclick="handlePasswordReset()"
+                                class="text-[10px] font-black uppercase text-blue-500 hover:text-blue-400 transition border-r border-slate-300 dark:border-slate-700 pr-3">
+                                Forgot?
+                            </button>
+
+                            <button onclick="togglePasswordVisibility()" type="button"
+                                class="opacity-40 hover:opacity-100 transition">
+                                <span id="eye-icon">👁️</span>
+                            </button>
+                        </div>
+                    </div>
                     <button onclick="handleEmailAuth()" id="primary-auth-btn"
                         class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg">Login</button>
                     <div class="flex items-center py-2">

@@ -469,6 +469,20 @@ document.getElementById('resource-search-nav')?.addEventListener('keydown', (e) 
     }
 });
 
+// Add this to your app.js file
+window.togglePasswordVisibility = () => {
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eye-icon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.innerText = '🙈'; // Icon for "Hide"
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.innerText = '👁️'; // Icon for "Show"
+    }
+};
+
 // Resend verification email
 window.resendVerification = async () => {
     const user = auth.currentUser;
@@ -486,13 +500,13 @@ window.resendVerification = async () => {
 window.handlePasswordReset = async () => {
     const email = document.getElementById('email').value;
     if (!email) {
-        alert("Please enter your email address first.");
+        alert("⚠️ Please enter your email address first so we know where to send the link.");
         return;
     }
     
     try {
         await sendPasswordResetEmail(auth, email);
-        alert("✅ Password reset email sent! Check your inbox.");
+        alert("✅ Password reset email sent! Please check your inbox and spam folder.");
     } catch (error) {
         alert("❌ Error: " + error.message);
     }
