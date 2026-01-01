@@ -1,10 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 
-// REPLACE WITH YOUR FIREBASE CONFIG
+// 2. Firebase Config (Keep your credentials)
 const firebaseConfig = {
     apiKey: "AIzaSyD7Rt59VPJpjqE_psCLubb96jtxX_mXGhQ",
     authDomain: "cp-tracker-782425.firebaseapp.com",
@@ -15,8 +13,8 @@ const firebaseConfig = {
     measurementId: "G-5Y5M7KGXV2"
 };
 
+// 3. Initialize Services
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
@@ -62,7 +60,25 @@ window.handleEmailAuth = async () => {
     } catch (e) { alert(e.message); }
 };
 
-window.handleGoogleAuth = () => signInWithPopup(auth, googleProvider);
+// window.handleGoogleAuth = () => signInWithPopup(auth, googleProvider);
+window.handleGoogleAuth = async () => {
+    try {
+        const result = await signInWithPopup(auth, googleProvider);
+        // The helper onAuthStateChanged will handle the redirect automatically
+        console.log("User signed in:", result.user);
+    } catch (error) {
+        console.error("Google Auth Error:", error.code, error.message);
+        
+        // Handle specific common errors
+        if (error.code === 'auth/popup-blocked') {
+            alert("Please allow popups for this website to sign in with Google.");
+        } else if (error.code === 'auth/cancelled-popup-request') {
+            console.log("Popup closed before finishing.");
+        } else {
+            alert("Google Sign-in failed: " + error.message);
+        }
+    }
+};
 window.logout = () => signOut(auth);
 
 // --- Data Visualization ---
@@ -76,12 +92,30 @@ async function loadUserData(userId) {
 }
 
 function updateDashboard(logs) {
-    // 1. Update Summary Stats
+    // 1. Today's Solved
     const todayStr = new Date().toISOString().split('T')[0];
     const todaySolved = logs.filter(l => l.date === todayStr).reduce((a, b) => a + parseInt(b.problemsSolved), 0);
     document.getElementById('stat-today').innerText = todaySolved;
 
-    // 2. Chart logic
+    // 2. Last 7 Days Total
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const weekTotal = logs
+        .filter(l => new Date(l.date) >= sevenDaysAgo)
+        .reduce((a, b) => a + parseInt(b.problemsSolved), 0);
+    document.getElementById('stat-week').innerText = weekTotal;
+
+    // 3. Current Streak
+    let streak = 0;
+    let checkDate = new Date();
+    const logDates = new Set(logs.map(l => l.date));
+
+    while (logDates.has(checkDate.toISOString().split('T')[0])) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+    }
+    document.getElementById('stat-streak').innerText = `${streak}🔥`;
+
     renderCharts(logs);
 }
 
@@ -92,30 +126,61 @@ function renderCharts(logs) {
     const ctxBar = document.getElementById('barChart').getContext('2d');
     const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
 
-    // Destroy old charts if they exist
-    Object.values(charts).forEach(c => c.destroy());
+    if (charts.line) charts.line.destroy();
+    if (charts.bar) charts.bar.destroy();
+    if (charts.doughnut) charts.doughnut.destroy();
 
-    // Processing Logic
-    const dates = logs.map(l => l.date).reverse();
-    const counts = logs.map(l => l.problemsSolved).reverse();
-    
+    // --- Line Chart (Activity) ---
+    const activityData = logs.slice().reverse();
     charts.line = new Chart(ctxLine, {
         type: 'line',
         data: {
-            labels: dates,
+            labels: activityData.map(l => l.date),
             datasets: [{
                 label: 'Solved',
-                data: counts,
+                data: activityData.map(l => l.problemsSolved),
                 borderColor: '#3b82f6',
-                tension: 0.4,
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 fill: true,
-                backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                tension: 0.3
             }]
         },
         options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // Bar & Doughnut charts logic follows similar pattern...
+    // --- Bar Chart (Topics) ---
+    const topicMap = {};
+    logs.forEach(l => l.topics.forEach(t => topicMap[t] = (topicMap[t] || 0) + 1));
+    
+    charts.bar = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(topicMap),
+            datasets: [{
+                label: 'Frequency',
+                data: Object.values(topicMap),
+                backgroundColor: '#8b5cf6'
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // --- Doughnut Chart (Difficulty) ---
+    const diffMap = { Easy: 0, Medium: 0, Hard: 0 };
+    logs.forEach(l => diffMap[l.difficulty] = (diffMap[l.difficulty] || 0) + 1);
+
+    charts.doughnut = new Chart(ctxDoughnut, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(diffMap),
+            datasets: [{
+                data: Object.values(diffMap),
+                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+    });
 }
 
 // --- Form Submission ---
