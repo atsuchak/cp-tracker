@@ -4,242 +4,455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CP Tracker | Modern Dev</title>
+    <title>CP Tracker | Modern Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@500&display=swap"
         rel="stylesheet">
     <style>
         :root {
             --bg: #ffffff;
-            --surface: #f8fafc;
-            --text: #0f172a;
-            --border: #e2e8f0;
-            --primary: #3b82f6;
+            --surface: #f3f4f6;
+            --text: #1f2937;
+            --primary: #2563eb;
         }
 
         .dark {
-            --bg: #020617;
-            --surface: #0f172a;
-            --text: #f8fafc;
-            --border: #1e293b;
-            --primary: #60a5fa;
+            --bg: #0b0f1a;
+            --surface: #161b2c;
+            --text: #f3f4f6;
+            --primary: #3b82f6;
         }
 
         body {
             background-color: var(--bg);
             color: var(--text);
-            transition: background 0.3s, color 0.3s;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all 0.3s ease;
         }
 
-        .glass {
-            background: rgba(var(--surface), 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
+        .glass-card {
+            background: rgba(var(--surface), 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
         }
 
-        .card-hover:hover {
-            transform: translateY(-4px);
-            border-color: var(--primary);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .fab {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
         }
 
         .mono {
             font-family: 'JetBrains Mono', monospace;
         }
 
-        input,
-        select {
-            transition: all 0.2s ease;
+        .progress-ring {
+            transition: stroke-dashoffset 0.5s ease-in-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
         }
 
         .hidden {
             display: none;
         }
+
+        footer {
+            background-color: var(--bg);
+            color: var(--text);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark footer {
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Task item styling */
+        .task-item {
+            background-color: rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: var(--text);
+        }
+
+        .dark .task-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .task-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .dark .task-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        /* Custom Scrollbar for Tasks */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 10px;
+        }
     </style>
 </head>
 
-<body class="min-h-screen">
-    <div class="fixed bottom-6 right-6 z-[100]">
-        <button onclick="toggleTheme()"
-            class="p-4 rounded-full glass shadow-2xl hover:scale-110 active:scale-95 transition">
-            <span id="theme-icon">☀️</span>
-        </button>
-    </div>
+<body class="min-h-screen flex flex-col transition-colors duration-300">
 
-    <section id="auth-view"
-        class="flex items-center justify-center min-h-screen p-6 bg-[radial-gradient(circle_at_top_right,_var(--primary)_0%,_transparent_25%)]">
-        <div class="glass p-10 rounded-3xl w-full max-w-md shadow-2xl border-t-2 border-t-blue-500/20">
-            <div class="text-center mb-10">
-                <h1 class="text-4xl font-black tracking-tighter mono text-blue-500">CP_TRACK</h1>
-                <p class="text-slate-500 dark:text-slate-400 mt-2">Elevate your competitive edge.</p>
-            </div>
-
-            <div id="auth-form" class="space-y-4">
-                <input type="email" id="email" placeholder="Email address"
-                    class="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 outline-none">
-                <input type="password" id="password" placeholder="Password"
-                    class="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 outline-none">
-                <button onclick="handleEmailAuth()" id="primary-auth-btn"
-                    class="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition">Login</button>
-
-                <div class="relative flex py-4 items-center">
-                    <div class="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-                    <span class="flex-shrink mx-4 text-slate-400 text-xs font-bold uppercase tracking-widest">or</span>
-                    <div class="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-                </div>
-
-                <button onclick="handleGoogleAuth()"
-                    class="w-full glass py-4 rounded-xl font-semibold flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.svg" width="18"> Continue
-                    with Google
-                </button>
-            </div>
-            <p class="mt-8 text-center text-sm text-slate-500">
-                <span id="auth-toggle-text">Don't have an account?</span>
-                <button onclick="toggleAuthMode()" class="text-blue-500 font-bold hover:underline ml-1"
-                    id="auth-toggle-btn">Sign Up</button>
-            </p>
+    <div class="flex-grow">
+        <div class="fixed bottom-8 right-8 z-[100] flex flex-col items-end gap-4">
+            <div id="fab-label"
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-xl opacity-0 transition-opacity">
+                Add Problem Log</div>
+            <button onclick="showSection('add-log')"
+                onmouseover="document.getElementById('fab-label').style.opacity='1'"
+                onmouseout="document.getElementById('fab-label').style.opacity='0'"
+                class="fab w-16 h-16 bg-blue-600 rounded-2xl shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center text-white text-3xl">
+                ＋
+            </button>
         </div>
-    </section>
 
-    <section id="app-view" class="hidden">
-        <nav
-            class="border-b border-slate-200 dark:border-slate-800 p-5 sticky top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl z-50">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <div
-                        class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold mono">
-                        C</div>
-                    <span class="mono font-bold tracking-tight">DASHBOARD</span>
-                </div>
-                <div class="flex gap-6 items-center">
-                    <div class="relative group">
-                        <button class="text-slate-500 hover:text-blue-500 text-sm font-medium flex items-center gap-1">
-                            Judges <span class="text-[10px]">▼</span>
-                        </button>
-                        <div
-                            class="absolute right-0 mt-2 w-48 glass rounded-xl shadow-xl hidden group-hover:block z-[60] overflow-hidden">
-                            <a href="https://codeforces.com" target="_blank"
-                                class="block px-4 py-2 text-sm hover:bg-blue-500/10 transition">Codeforces</a>
-                            <a href="https://leetcode.com" target="_blank"
-                                class="block px-4 py-2 text-sm hover:bg-blue-500/10 transition">LeetCode</a>
-                            <a href="https://atcoder.jp" target="_blank"
-                                class="block px-4 py-2 text-sm hover:bg-blue-500/10 transition">AtCoder</a>
-                            <a href="https://www.codechef.com" target="_blank"
-                                class="block px-4 py-2 text-sm hover:bg-blue-500/10 transition">CodeChef</a>
-                            <a href="https://cses.fi/problemset/" target="_blank"
-                                class="block px-4 py-2 text-sm hover:bg-blue-500/10 transition">CSES</a>
-                        </div>
+        <section id="auth-view" class="flex items-center justify-center min-h-screen p-6">
+            <div class="glass-card p-10 w-full max-w-md shadow-2xl text-center">
+                <h1 class="text-3xl font-extrabold tracking-tight mb-2">CP Tracker</h1>
+                <p class="text-slate-500 mb-8 text-sm">Your competitive programming companion.</p>
+                <div class="space-y-4">
+                    <input type="email" id="email" placeholder="Email"
+                        class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/50 outline-none border border-transparent focus:border-blue-500">
+                    <input type="password" id="password" placeholder="Password"
+                        class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/50 outline-none border border-transparent focus:border-blue-500">
+                    <button onclick="handleEmailAuth()" id="primary-auth-btn"
+                        class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg">Login</button>
+                    <div class="flex items-center py-2">
+                        <hr class="flex-grow opacity-10"><span class="px-3 text-xs opacity-40">OR</span>
+                        <hr class="flex-grow opacity-10">
                     </div>
-                    <button onclick="showSection('profile')"
-                        class="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-blue-500 transition">
-                        <img id="nav-avatar" src="https://ui-avatars.com/api/?name=User&background=random"
-                            class="w-full h-full object-cover">
+                    <button onclick="handleGoogleAuth()"
+                        class="w-full bg-white dark:bg-slate-800 text-current py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.svg" width="18">
+                        Google
                     </button>
-                    
-                    <button onclick="showSection('add-log')"
-                        class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-lg shadow-blue-500/20 transition">+
-                        New Log</button>
-                    <button onclick="logout()"
-                        class="text-slate-500 hover:text-red-500 transition-colors text-sm font-medium">Sign
-                        Out</button>
                 </div>
+                <button onclick="toggleAuthMode()" class="mt-6 text-sm text-blue-500 font-bold"
+                    id="auth-toggle-btn">Create
+                    an account</button>
             </div>
-        </nav>
+        </section>
 
-        <main class="max-w-7xl mx-auto p-6 md:p-12">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-                <div class="glass p-8 rounded-3xl card-hover">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-slate-500 text-xs font-bold uppercase tracking-widest">Today</span>
-                        <span class="text-blue-500 text-xl">↗</span>
-                    </div>
-                    <h2 id="stat-today" class="text-5xl font-black mono">0</h2>
-                    <p class="text-slate-400 text-sm mt-2 italic">problems solved</p>
-                </div>
-                <div class="glass p-8 rounded-3xl card-hover">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-slate-500 text-xs font-bold uppercase tracking-widest">7 Days</span>
-                        <span class="text-purple-500 text-xl">📊</span>
-                    </div>
-                    <h2 id="stat-week" class="text-5xl font-black mono">0</h2>
-                    <p class="text-slate-400 text-sm mt-2 italic">weekly total</p>
-                </div>
-                <div class="glass p-8 rounded-3xl card-hover border-r-4 border-r-orange-500">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-slate-500 text-xs font-bold uppercase tracking-widest">Streak</span>
-                        <span id="streak-icon" class="text-xl">🔥</span>
-                    </div>
-                    <h2 id="stat-streak" class="text-5xl font-black mono">0</h2>
-                    <p class="text-slate-400 text-sm mt-2 italic">consecutive days</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-12 gap-8">
-                <div class="col-span-12 lg:col-span-8 glass p-8 rounded-3xl overflow-hidden">
-                    <h3 class="font-bold text-lg mb-8">Activity Pipeline</h3>
-                    <div class="relative h-[350px] w-full"> <canvas id="lineChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="col-span-12 lg:col-span-4 flex flex-col gap-8">
-                    <div class="glass p-8 rounded-3xl overflow-hidden">
-                        <h3 class="font-bold text-xs uppercase tracking-widest text-slate-500 mb-6">Difficulty</h3>
-                        <div class="relative h-[220px] w-full"> <canvas id="doughnutChart"></canvas>
+        <section id="app-view" class="hidden">
+            <nav class="max-w-7xl mx-auto px-6 py-4 sticky top-0 z-[90]">
+                <div class="glass-card px-8 py-4 flex justify-between items-center border border-white/10 shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20">
+                            CP
+                        </div>
+                        <div class="hidden md:block">
+                            <span class="font-black text-lg tracking-tight block leading-none">DASHBOARD</span>
+                            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Performance
+                                Tracker</span>
                         </div>
                     </div>
-                    <div class="glass p-8 rounded-3xl overflow-hidden">
-                        <h3 class="font-bold text-xs uppercase tracking-widest text-slate-500 mb-6">Topics</h3>
-                        <div class="relative h-[220px] w-full"> <canvas id="barChart"></canvas>
+
+                    <div class="flex items-center gap-2 md:gap-6">
+                        <button onclick="toggleTheme()"
+                            class="w-10 h-10 rounded-xl hover:bg-white/5 flex items-center justify-center transition-all group">
+                            <span id="theme-icon" class="text-lg group-hover:scale-110 transition-transform">☀️</span>
+                        </button>
+
+                        <div class="h-8 w-[1px] bg-white/10 mx-1"></div>
+
+                        <button onclick="showSection('profile')"
+                            class="flex items-center gap-3 group p-1 pr-3 rounded-2xl hover:bg-white/5 transition-all">
+                            <div
+                                class="w-10 h-10 rounded-xl overflow-hidden border-2 border-blue-500/30 group-hover:border-blue-500 transition-all bg-slate-800 flex items-center justify-center">
+                                <img id="nav-avatar"
+                                    src="https://ui-avatars.com/api/?name=User&background=0D1117&color=fff"
+                                    class="w-full h-full object-cover"
+                                    onerror="this.src='https://ui-avatars.com/api/?name=User&background=0D1117&color=fff'">
+                            </div>
+                            <div class="hidden sm:block text-left">
+                                <p class="text-xs font-black leading-none mb-1 uppercase">Profile</p>
+                                <p class="text-[9px] text-blue-500 font-bold uppercase tracking-tighter">Manage Account
+                                </p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <main class="max-w-7xl mx-auto px-6 grid grid-cols-12 gap-6">
+
+                <div class="col-span-12 lg:col-span-4 space-y-6">
+                    <div
+                        class="glass-card p-8 bg-gradient-to-br from-blue-600 to-blue-700 text-white relative overflow-hidden">
+                        <div class="relative z-10">
+                            <p class="text-sm font-medium opacity-80">This Week's Goal</p>
+                            <h2 class="text-5xl font-black mt-2 mono" id="target-percent">0%</h2>
+                            <div class="mt-8 flex justify-between items-end">
+                                <div>
+                                    <p class="text-xs uppercase font-bold opacity-60">Remaining</p>
+                                    <p class="text-2xl font-bold"><span id="target-remaining">0</span> Problems</p>
+                                </div>
+                                <button onclick="showSection('set-target')"
+                                    class="bg-white/20 hover:bg-white/30 p-2 px-4 rounded-lg text-xs font-bold transition">Set
+                                    Goal</button>
+                            </div>
+                        </div>
+                        <svg class="absolute -right-8 -bottom-8 w-48 h-48 opacity-20">
+                            <circle class="progress-ring" stroke="white" stroke-width="12" fill="transparent" r="70"
+                                cx="96" cy="96" stroke-dasharray="440" stroke-dashoffset="100" />
+                        </svg>
+                    </div>
+
+                    <div class="glass-card p-6 border-t-2 border-emerald-500 shadow-xl overflow-hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-sm font-black uppercase tracking-widest text-slate-400">DAILY FOCUS</h3>
+                            <span
+                                class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-md">TODAY</span>
+                        </div>
+
+                        <div class="flex gap-2 mb-6">
+                            <input type="text" id="plan-task-input" placeholder="What's next?"
+                                class="flex-grow bg-white/5 border border-white/10 p-3 rounded-xl text-sm outline-none focus:border-emerald-500/50 transition-all">
+                            <button onclick="saveDailyTask()"
+                                class="p-3 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl transition-all">
+                                ＋
+                            </button>
+                        </div>
+
+                        <div id="planner-today-box" class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        </div>
+                    </div>
+
+                    <div id="insights-container" class="space-y-3">
+                    </div>
+                </div>
+
+                <div class="col-span-12 lg:col-span-8 space-y-6">
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="glass-card p-6 text-center">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Today</p>
+                            <p id="stat-today" class="text-3xl font-black mono">0</p>
+                        </div>
+                        <div class="glass-card p-6 text-center">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Streak</p>
+                            <p id="stat-streak" class="text-3xl font-black mono text-orange-500">0</p>
+                        </div>
+                        <div class="glass-card p-6 text-center border-b-4 border-blue-500">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">7D Total</p>
+                            <p id="stat-week" class="text-3xl font-black mono">0</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-8 min-h-[400px]">
+                        <h3 class="font-bold mb-6 flex items-center justify-between">
+                            Activity Pipeline
+                            <span class="text-xs font-normal text-slate-500">Last 30 days</span>
+                        </h3>
+                        <div class="h-[300px]"><canvas id="lineChart"></canvas></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="glass-card p-8">
+                            <h3 class="text-sm font-bold text-slate-500 uppercase mb-4">Difficulty Distribution</h3>
+                            <div class="h-[200px]"><canvas id="doughnutChart"></canvas></div>
+                        </div>
+                        <div class="glass-card p-8">
+                            <h3 class="text-sm font-bold text-slate-500 uppercase mb-6">Efficiency Stats</h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                                    <span class="text-slate-500 text-sm">Best Day</span>
+                                    <span id="perf-best" class="font-bold text-sm">-</span>
+                                </div>
+                                <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                                    <span class="text-slate-500 text-sm">Avg Problems/Day</span>
+                                    <span id="perf-avg" class="font-bold text-sm">0.0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500 text-sm">Top Topic</span>
+                                    <span id="perf-topic" class="font-bold text-sm">-</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </main>
-    </section>
+            </main>
+        </section>
 
-    <div id="add-log-view"
-        class="hidden fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-        <div class="glass p-8 rounded-3xl w-full max-w-lg shadow-2xl scale-in">
-            <div class="flex justify-between mb-8">
-                <h2 class="text-2xl font-bold mono">LOG_PROGRESS</h2>
-                <button onclick="showSection('dashboard')"
-                    class="text-slate-400 hover:text-red-500 transition">✕</button>
+        <div id="modal-overlay"
+            class="hidden fixed inset-0 bg-black/60 backdrop-blur-md z-[110] flex items-center justify-center p-4">
+
+            <div id="add-log-view"
+                class="hidden glass-card p-10 w-full max-w-xl bg-slate-900/90 border border-blue-500/20 shadow-[0_0_50px_rgba(59,130,246,0.1)]">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-2xl font-black tracking-tight">LOG PROGRESS</h2>
+                        <p class="text-xs text-blue-400 font-bold uppercase tracking-widest mt-1">Consistency is key</p>
+                    </div>
+                    <button onclick="closeModals()" class="p-2 hover:bg-white/10 rounded-full transition-all">✕</button>
+                </div>
+
+                <form id="log-form" class="grid grid-cols-2 gap-6">
+                    <div class="col-span-1 space-y-2">
+                        <label
+                            class="text-[10px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1">
+                            📅 Live Date
+                        </label>
+                        <input type="text" id="log-date" readonly
+                            class="w-full p-4 rounded-xl bg-slate-800/30 border border-white/5 text-slate-500 cursor-not-allowed outline-none transition-all"
+                            title="Date is automatically set to today">
+                    </div>
+                    <div class="col-span-1 space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">🌐
+                            Platform</label>
+                        <select id="log-platform"
+                            class="w-full p-4 rounded-xl bg-slate-800/50 border border-white/10 focus:border-blue-500 outline-none transition-all">
+                            <option>LeetCode</option>
+                            <option>Codeforces</option>
+                            <option>AtCoder</option>
+                        </select>
+                    </div>
+                    <div class="col-span-1 space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">🔢 Problem
+                            Count</label>
+                        <input type="number" id="log-count" placeholder="Count" required
+                            class="w-full p-4 rounded-xl bg-slate-800/50 border border-white/10 focus:border-blue-500 outline-none">
+                    </div>
+                    <div class="col-span-1 space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">📈
+                            Difficulty</label>
+                        <select id="log-diff"
+                            class="w-full p-4 rounded-xl bg-slate-800/50 border border-white/10 focus:border-blue-500 outline-none">
+                            <option>Easy</option>
+                            <option>Medium</option>
+                            <option>Hard</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2 space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">🔥
+                            Topics</label>
+                        <input type="text" id="log-topics" placeholder="DP, Graphs, Trees..."
+                            class="w-full p-4 rounded-xl bg-slate-800/50 border border-white/10 focus:border-blue-500 outline-none transition-all">
+                    </div>
+
+                    <button type="submit"
+                        class="col-span-2 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-2xl font-black text-sm tracking-widest shadow-lg shadow-blue-900/20 transform active:scale-[0.98] transition-all">
+                        COMMIT TO DATABASE
+                    </button>
+                </form>
             </div>
-            <form id="log-form" class="space-y-5">
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="date" id="log-date" required
-                        class="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 outline-none">
-                    <select id="log-platform"
-                        class="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 outline-none">
-                        <option>LeetCode</option>
-                        <option>Codeforces</option>
-                        <option>AtCoder</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="log-count" placeholder="Count" required
-                        class="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 outline-none">
-                    <select id="log-diff"
-                        class="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 outline-none">
-                        <option>Easy</option>
-                        <option>Medium</option>
-                        <option>Hard</option>
-                    </select>
-                </div>
-                <input type="text" id="log-topics" placeholder="Topics (e.g. DP, Graphs)"
-                    class="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 outline-none">
-                <button type="submit"
-                    class="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition">Commit
-                    Log</button>
-            </form>
+
+            <div id="target-modal" class="hidden glass-card p-8 w-full max-w-sm bg-white dark:bg-slate-900">
+                <h2 class="text-xl font-bold mb-6">SET WEEKLY TARGET</h2>
+                <input type="number" id="target-input" placeholder="e.g. 25"
+                    class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 outline-none mb-4">
+                <button onclick="saveWeeklyTarget()"
+                    class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Save
+                    Goal</button>
+            </div>
         </div>
     </div>
+    <footer class="w-full mt-auto py-8 px-6 border-t transition-all duration-300">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+
+            <div class="flex flex-col items-center md:items-start gap-2">
+                <div class="flex items-center gap-2 mb-1">
+                    <div
+                        class="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center text-white text-[10px] font-black shadow-lg shadow-blue-500/20">
+                        CP
+                    </div>
+                    <span class="font-black text-sm tracking-tighter uppercase text-slate-900 dark:text-white">
+                        CP_Tracker Pro
+                    </span>
+                </div>
+                <p
+                    class="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80 text-slate-500 dark:text-slate-400">
+                    &copy; 2026 Ahnaf Tajwar Suchak
+                </p>
+            </div>
+
+            <div class="hidden lg:flex items-center gap-8">
+                <div class="text-center">
+                    <p class="text-[9px] font-black uppercase mb-1 text-slate-400 dark:text-slate-500">Database</p>
+                    <p class="text-[11px] font-bold flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Firebase Live
+                    </p>
+                </div>
+                <div class="h-6 w-[1px] bg-slate-200 dark:bg-white/10"></div>
+                <div class="text-center">
+                    <p class="text-[9px] font-black uppercase mb-1 text-slate-400 dark:text-slate-500">Timezone</p>
+                    <p class="text-[11px] font-bold uppercase text-slate-700 dark:text-slate-300">GMT+6</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a target="_blank" href="https://github.com/atsuchak"
+                    class="w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white dark:hover:text-white">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                        </path>
+                    </svg>
+                </a>
+                <a target="_blank" href="https://www.linkedin.com/in/atsuchak/"
+                    class="w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white dark:hover:text-white">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                        <rect x="2" y="9" width="4" height="12"></rect>
+                        <circle cx="4" cy="4" r="2"></circle>
+                    </svg>
+                </a>
+                <a target="_blank" href="mailto:ahnaftajwarsuchak@gmail.com"
+                    class="w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white dark:hover:text-white">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                </a>
+                <a target="_blank" href="https://atsuchak.me"
+                    class="w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white dark:hover:text-white">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path
+                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                        </path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </footer>
 
     <script type="module" src="app.js"></script>
+    <script>
+        // Modal & View Logic
+        window.closeModals = () => {
+            document.getElementById('modal-overlay').classList.add('hidden');
+            document.getElementById('add-log-view').classList.add('hidden');
+            document.getElementById('target-modal').classList.add('hidden');
+        };
+
+        window.showSection = (section) => {
+            closeModals();
+            if (section === 'profile') { window.location.href = 'profile.html'; return; }
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            if (section === 'add-log') document.getElementById('add-log-view').classList.remove('hidden');
+            if (section === 'set-target') document.getElementById('target-modal').classList.remove('hidden');
+        };
+    </script>
 </body>
 
 </html>

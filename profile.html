@@ -4,39 +4,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile | CP Tracker</title>
+    <title>Profile Settings | CP Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@500&display=swap"
         rel="stylesheet">
     <style>
         :root {
             --bg: #ffffff;
-            --surface: #f8fafc;
-            --text: #0f172a;
-            --border: #e2e8f0;
-            --primary: #3b82f6;
+            --surface: #f3f4f6;
+            --text: #1f2937;
+            --primary: #2563eb;
         }
 
         .dark {
-            --bg: #020617;
-            --surface: #0f172a;
-            --text: #f8fafc;
-            --border: #1e293b;
-            --primary: #60a5fa;
+            --bg: #0b0f1a;
+            --surface: #161b2c;
+            --text: #f3f4f6;
+            --primary: #3b82f6;
         }
 
         body {
             background-color: var(--bg);
             color: var(--text);
-            font-family: 'Inter', sans-serif;
-            transition: background 0.3s, color 0.3s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all 0.3s ease;
         }
 
-        .glass {
-            background: rgba(var(--surface), 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
+        .glass-card {
+            background: rgba(var(--surface), 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+        }
+
+        .input-field {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .dark .input-field {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
 
         .mono {
@@ -45,101 +59,139 @@
     </style>
 </head>
 
-<body class="min-h-screen p-6 md:p-12 bg-[radial-gradient(circle_at_bottom_left,_var(--primary)_0%,_transparent_20%)]">
+<body class="min-h-screen p-4 md:p-8 bg-[radial-gradient(circle_at_top_right,_var(--primary)_0%,_transparent_25%)]">
 
-    <div class="max-w-2xl mx-auto">
-        <div class="flex items-center justify-between mb-12">
-            <a href="index.html" class="text-slate-500 hover:text-blue-500 transition flex items-center gap-2">
-                <span>←</span> Back to Dashboard
-            </a>
-            <div class="flex items-center gap-4">
+    <div class="max-w-5xl mx-auto">
+        <header class="mb-10">
+            <div class="flex justify-between items-center mb-4">
+                <a href="index.html"
+                    class="text-sm font-bold text-blue-500 hover:text-blue-400 flex items-center gap-2 transition">
+                    <span>←</span> Return to Dashboard
+                </a>
                 <button onclick="logout()"
-                    class="text-red-500 hover:bg-red-500/10 px-4 py-2 rounded-xl text-sm font-bold transition">Sign
-                    Out</button>
-                <h1 class="text-2xl font-black mono text-blue-500 uppercase">Profile</h1>
-            </div>
-        </div>
-
-        <div class="glass p-10 rounded-3xl shadow-2xl mb-8">
-            <h3 class="text-xl font-bold mono text-blue-500 mb-6 uppercase">General Info</h3>
-            <form id="profile-form" class="space-y-6">
-                <div class="flex flex-col items-center gap-4 mb-8">
-                    <img id="profile-img-preview" src="https://ui-avatars.com/api/?name=User"
-                        class="w-32 h-32 rounded-full border-4 border-blue-500/20 object-cover shadow-xl">
-                    <input type="text" id="profile-pic-url" placeholder="Paste Image URL"
-                        class="w-full max-w-xs p-2 text-xs text-center rounded-lg bg-slate-100 dark:bg-slate-900 border-none outline-none">
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">Full Name</label>
-                        <input type="text" id="profile-name" required
-                            class="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 outline-none">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">Username</label>
-                        <input type="text" id="profile-username" required
-                            class="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 outline-none">
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">Institution</label>
-                    <input type="text" id="profile-institution" placeholder="University or Organization"
-                        class="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 outline-none">
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">Date of Birth</label>
-                    <input type="date" id="profile-dob"
-                        class="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 outline-none">
-                </div>
-
-                <button type="submit"
-                    class="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition transform active:scale-[0.98]">
-                    Save Profile Changes
+                    class="px-6 py-3 rounded-2xl bg-red-500/10 text-red-500 font-bold hover:bg-red-500 hover:text-white transition">
+                    Sign Out
                 </button>
-            </form>
-        </div>
+            </div>
+            <div class="text-center">
+                <h1 class="text-4xl font-black tracking-tight">Account <span class="text-blue-500">Settings</span></h1>
+            </div>
+        </header>
 
-        <div class="glass p-10 rounded-3xl shadow-2xl border-t-2 border-t-red-500/10">
-            <h3 class="text-xl font-bold mono text-red-500 mb-6 uppercase">Account & Security</h3>
+        <div class="grid grid-cols-12 gap-8">
+            <div class="col-span-12 lg:col-span-4 space-y-6">
+                <div class="glass-card p-8 text-center relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div class="relative inline-block mb-6">
+                            <img id="profile-img-preview" src="https://ui-avatars.com/api/?name=User"
+                                class="w-32 h-32 rounded-3xl object-cover border-4 border-blue-500/20 shadow-2xl mx-auto">
+                            <div class="absolute -bottom-2 -right-2 bg-blue-600 p-2 rounded-xl text-white shadow-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                            </div>
+                        </div>
+                        <h2 id="display-name" class="text-2xl font-black mb-1">...</h2>
+                        <p id="display-username" class="text-sm text-slate-500 mono mb-6">@username</p>
 
-            <div class="space-y-8">
-                <div class="p-6 rounded-2xl bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
-                    <h4 class="text-sm font-bold uppercase tracking-widest mb-4">Update Password</h4>
-                    <div class="flex flex-col md:flex-row gap-3">
-                        <input type="password" id="new-password" placeholder="New Password"
-                            class="flex-grow p-4 rounded-xl bg-white dark:bg-slate-950 border border-transparent focus:border-blue-500 outline-none">
-                        <button onclick="updatePasswordHandler()"
-                            class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold transition">Update</button>
+                        <div class="space-y-2 text-left">
+                            <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Profile Image
+                                URL</label>
+                            <input type="text" id="profile-pic-url" placeholder="Paste URL here..."
+                                class="w-full p-3 rounded-xl input-field outline-none text-xs">
+                        </div>
                     </div>
                 </div>
 
-                <div class="p-6 rounded-2xl bg-red-500/5 border border-red-500/20">
-                    <h4 class="text-sm font-bold uppercase tracking-widest text-red-500 mb-6">Danger Zone</h4>
-                    
-                    <div class="mb-6">
-                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Current Password (Required for Reset/Delete)</label>
-                        <input type="password" id="confirm-password" placeholder="Confirm your password"
-                            class="w-full p-4 rounded-xl bg-white dark:bg-slate-950 border border-transparent focus:border-red-500 outline-none">
+                <div class="glass-card p-6 bg-blue-600/5 border-blue-500/20">
+                    <h3 class="text-xs font-black uppercase text-blue-500 mb-3 tracking-widest">Security Tip</h3>
+                    <p class="text-xs text-slate-500 leading-relaxed">Ensure your password is at least 8 characters long
+                        and includes numbers for better protection of your CP logs.</p>
+                </div>
+            </div>
+
+            <div class="col-span-12 lg:col-span-8 space-y-8">
+                <div class="glass-card p-10">
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
+                        <h3 class="text-xl font-bold">General Information</h3>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-2">
-                            <p class="text-[10px] text-slate-500 px-1">Wipes all CP logs, charts, and streaks.</p>
-                            <button onclick="resetDataHandler()"
-                                class="w-full bg-orange-600/10 hover:bg-orange-600 text-orange-600 hover:text-white border border-orange-600 py-3 rounded-xl font-bold transition text-sm">
-                                Reset All Progress
-                            </button>
+                    <form id="profile-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Full Name</label>
+                                <input type="text" id="profile-name" required
+                                    class="w-full p-4 rounded-2xl input-field outline-none">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Username</label>
+                                <input type="text" id="profile-username" required
+                                    class="w-full p-4 rounded-2xl input-field outline-none">
+                            </div>
                         </div>
-                        
+
                         <div class="space-y-2">
-                            <p class="text-[10px] text-slate-500 px-1">Permanently removes your account.</p>
-                            <button onclick="deleteAccountHandler()"
-                                class="w-full bg-red-600/10 hover:bg-red-600 text-red-600 hover:text-white border border-red-600 py-3 rounded-xl font-bold transition text-sm">
-                                Delete Account
-                            </button>
+                            <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Institution</label>
+                            <input type="text" id="profile-institution" placeholder="e.g. Stanford University"
+                                class="w-full p-4 rounded-2xl input-field outline-none">
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Date of Birth</label>
+                            <input type="date" id="profile-dob" class="w-full p-4 rounded-2xl input-field outline-none">
+                        </div>
+
+                        <button type="submit"
+                            class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black shadow-lg shadow-blue-900/20 transition transform active:scale-[0.98]">
+                            Save Profile Changes
+                        </button>
+                    </form>
+                </div>
+
+                <div class="glass-card p-10 border-t-4 border-red-500/20">
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="w-2 h-8 bg-red-600 rounded-full"></div>
+                        <h3 class="text-xl font-bold">Security & Privacy</h3>
+                    </div>
+
+                    <div class="space-y-8">
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-black uppercase text-slate-400 ml-1">New Password</label>
+                            <div class="flex flex-col md:flex-row gap-3">
+                                <input type="password" id="new-password" placeholder="At least 6 characters"
+                                    class="flex-grow p-4 rounded-2xl input-field outline-none">
+                                <button onclick="updatePasswordHandler()"
+                                    class="px-8 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold hover:bg-blue-600 hover:text-white hover:border-blue-600 transition">
+                                    Update
+                                </button>
+                            </div>
+                        </div>
+
+                        <hr class="opacity-5">
+
+                        <div class="p-6 rounded-3xl bg-red-500/5 border border-red-500/10">
+                            <h4 class="text-sm font-black text-red-500 uppercase tracking-widest mb-4">Danger Zone</h4>
+
+                            <div class="mb-6">
+                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-2 block">Confirm
+                                    Password to Proceed</label>
+                                <input type="password" id="confirm-password" placeholder="Verify identity"
+                                    class="w-full p-4 rounded-2xl input-field outline-none border-red-500/10 focus:border-red-500">
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button onclick="resetDataHandler()"
+                                    class="p-4 rounded-2xl border-2 border-orange-500/50 text-orange-500 font-bold hover:bg-orange-500 hover:text-white transition">
+                                    Wipe All Progress
+                                </button>
+                                <button onclick="deleteAccountHandler()"
+                                    class="p-4 rounded-2xl bg-red-600 text-white font-bold hover:bg-red-500 shadow-lg shadow-red-900/20 transition">
+                                    Delete Account
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
