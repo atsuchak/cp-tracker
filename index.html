@@ -61,6 +61,8 @@
             display: none;
         }
 
+
+
         footer {
             background-color: var(--bg);
             color: var(--text);
@@ -152,43 +154,80 @@
         </section>
 
         <section id="app-view" class="hidden">
-            <nav class="max-w-7xl mx-auto px-6 py-4 sticky top-0 z-[90]">
-                <div class="glass-card px-8 py-4 flex justify-between items-center border border-white/10 shadow-lg">
-                    <div class="flex items-center gap-3">
+            <nav class="max-w-7xl mx-auto px-6 py-6 sticky top-0 z-[90]">
+                <div class="flex items-center justify-between gap-6">
+
+                    <div onclick="window.location.href='index.html'"
+                        class="glass-card px-4 py-3 flex items-center gap-3 cursor-pointer border-l-4 border-l-blue-600 rounded-r-3xl rounded-l-lg shadow-xl">
                         <div
-                            class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20">
-                            CP
-                        </div>
-                        <div class="hidden md:block">
-                            <span class="font-black text-lg tracking-tight block leading-none">DASHBOARD</span>
-                            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Performance
-                                Tracker</span>
+                            class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20">
+                            CP</div>
+                        <div class="hidden sm:block">
+                            <span class="font-black text-[10px] tracking-[0.2em] block leading-none opacity-50">CP
+                                PROGRESS</span>
+                            <span class="font-black text-base tracking-tighter">TRACKER</span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2 md:gap-6">
-                        <button onclick="toggleTheme()"
-                            class="w-10 h-10 rounded-xl hover:bg-white/5 flex items-center justify-center transition-all group">
-                            <span id="theme-icon" class="text-lg group-hover:scale-110 transition-transform">☀️</span>
+                    <div class="hidden lg:flex flex-grow max-w-md relative group">
+                        <input type="text" id="resource-search-nav" placeholder="Quick find topics..."
+                            class="w-full h-11 pl-11 rounded-2xl bg-slate-100 dark:bg-slate-900/50 outline-none border border-transparent focus:border-blue-500 transition-all text-sm">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 opacity-30">🔍</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleMobileMenu()"
+                            class="lg:hidden w-11 h-11 glass-card flex items-center justify-center text-xl shadow-lg">
+                            <span id="hamburger-icon">☰</span>
                         </button>
 
-                        <div class="h-8 w-[1px] bg-white/10 mx-1"></div>
+                        <div class="hidden lg:flex glass-card p-1.5 items-center gap-1 rounded-2xl shadow-xl">
+                            <div class="flex items-center bg-black/5 dark:bg-white/5 rounded-xl p-1">
+                                <button onclick="window.location.href='index.html'"
+                                    class="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-blue-500 transition">Dashboard</button>
+                                <div class="w-[1px] h-4 bg-slate-300 dark:bg-white/10"></div>
+                                <button onclick="window.location.href='resources.html'"
+                                    class="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-blue-500 transition">Resources</button>
+                            </div>
+                            <button onclick="toggleTheme()"
+                                class="w-10 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center transition-all">
+                                <span id="theme-icon">☀️</span>
+                            </button>
+                            <button onclick="showSection('profile')" class="ml-1 relative group">
+                                <img id="nav-avatar" src="https://ui-avatars.com/api/?name=User"
+                                    class="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800 object-cover shadow-sm">
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-                        <button onclick="showSection('profile')"
-                            class="flex items-center gap-3 group p-1 pr-3 rounded-2xl hover:bg-white/5 transition-all">
-                            <div
-                                class="w-10 h-10 rounded-xl overflow-hidden border-2 border-blue-500/30 group-hover:border-blue-500 transition-all bg-slate-800 flex items-center justify-center">
-                                <img id="nav-avatar"
-                                    src="https://ui-avatars.com/api/?name=User&background=0D1117&color=fff"
-                                    class="w-full h-full object-cover"
-                                    onerror="this.src='https://ui-avatars.com/api/?name=User&background=0D1117&color=fff'">
-                            </div>
-                            <div class="hidden sm:block text-left">
-                                <p class="text-xs font-black leading-none mb-1 uppercase">Profile</p>
-                                <p class="text-[9px] text-blue-500 font-bold uppercase tracking-tighter">Manage Account
-                                </p>
-                            </div>
-                        </button>
+                <div id="mobile-menu" class="hidden fixed inset-0 z-[100] p-6 lg:hidden">
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-xl" onclick="toggleMobileMenu()"></div>
+                    <div class="relative glass-card w-full max-w-sm ml-auto p-8 shadow-2xl flex flex-col gap-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="font-black text-xl tracking-tighter">MENU</h2>
+                            <button onclick="toggleMobileMenu()" class="text-2xl">✕</button>
+                        </div>
+
+                        <div class="flex flex-col gap-3">
+                            <button onclick="window.location.href='index.html'"
+                                class="w-full p-4 glass-card text-left font-bold hover:bg-blue-600 hover:text-white transition">🏠
+                                Dashboard</button>
+                            <button onclick="window.location.href='resources.html'"
+                                class="w-full p-4 glass-card text-left font-bold hover:bg-blue-600 hover:text-white transition">📚
+                                Resources</button>
+                            <button onclick="showSection('profile')"
+                                class="w-full p-4 glass-card text-left font-bold hover:bg-blue-600 hover:text-white transition">👤
+                                Profile Settings</button>
+                            <button onclick="toggleTheme()"
+                                class="w-full p-4 glass-card text-left font-bold hover:bg-blue-600 hover:text-white transition">
+                                <span id="mobile-theme-icon">☀️</span> Toggle Theme
+                            </button>
+                        </div>
+
+                        <hr class="opacity-10">
+                        <button onclick="logout()"
+                            class="w-full p-4 rounded-2xl bg-red-500/10 text-red-500 font-black hover:bg-red-500 hover:text-white transition">LOGOUT</button>
                     </div>
                 </div>
             </nav>

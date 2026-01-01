@@ -71,6 +71,42 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
+window.toggleMobileMenu = () => {
+    const menu = document.getElementById('mobile-menu');
+    const isHidden = menu.classList.toggle('hidden');
+    
+    // Sync theme icon in mobile menu
+    const isDark = document.documentElement.classList.contains('dark');
+    const mobileThemeIcon = document.getElementById('mobile-theme-icon');
+    if (mobileThemeIcon) {
+        mobileThemeIcon.innerText = isDark ? '🌙' : '☀️';
+    }
+
+    // Prevent body scroll when menu is open
+    document.body.style.overflow = isHidden ? 'auto' : 'hidden';
+};
+
+// Existing toggleTheme function update (if needed)
+const originalToggleTheme = window.toggleTheme;
+window.toggleTheme = () => {
+    originalToggleTheme();
+    // Update mobile icon as well
+    const mobileThemeIcon = document.getElementById('mobile-theme-icon');
+    if (mobileThemeIcon) {
+        mobileThemeIcon.innerText = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+    }
+};
+
+const formatDriveUrl = (url) => {
+    if (url && url.includes('drive.google.com')) {
+        const fileId = url.split('/d/')[1]?.split('/')[0];
+        if (fileId) {
+            return `https://lh3.googleusercontent.com/d/${fileId}`;
+        }
+    }
+    return url;
+};
+
 async function syncProfile(uid) {
     try {
         const docSnap = await getDoc(doc(db, "users", uid, "profile", "data"));
@@ -79,7 +115,7 @@ async function syncProfile(uid) {
         if (docSnap.exists() && navAvatar) {
             const data = docSnap.data();
             if (data.photoURL) {
-                navAvatar.src = data.photoURL;
+                navAvatar.src = formatDriveUrl(data.photoURL);
             } else {
                 // Generate a clean default with the user's name
                 const initials = data.name ? data.name.charAt(0) : 'U';
@@ -104,26 +140,69 @@ async function loadUserData(userId) {
 }
 
 function updateDashboard(logs) {
-    const todayStr = new Date().toISOString().split('T')[0];
+    // Use local date string (YYYY-MM-DD) to match log-form format
+    const today = new Date();
+    const todayStr = today.toLocaleDateString('en-CA'); 
 
-    const todaySolved = logs.filter(l => l.date === todayStr).reduce((a, b) => a + (parseInt(b.problemsSolved) || 0), 0);
-    if (document.getElementById('stat-today')) document.getElementById('stat-today').innerText = todaySolved;
+    // 1. Calculate Today's Solved Count
+    const todaySolved = logs
+        .filter(l => l.date === todayStr)
+        .reduce((a, b) => a + (parseInt(b.problemsSolved) || 0), 0);
+    
+    if (document.getElementById('stat-today')) {
+        document.getElementById('stat-today').innerText = todaySolved;
+    }
 
+    // 2. Calculate 7-Day Total
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const weekTotal = logs.filter(l => new Date(l.date) >= sevenDaysAgo).reduce((a, b) => a + (parseInt(b.problemsSolved) || 0), 0);
-    if (document.getElementById('stat-week')) document.getElementById('stat-week').innerText = weekTotal;
-
-    let streak = 0;
-    let checkDate = new Date();
-    const logDates = new Set(logs.map(l => l.date));
-    while (logDates.has(checkDate.toISOString().split('T')[0])) {
-        streak++;
-        checkDate.setDate(checkDate.getDate() - 1);
+    
+    const weekTotal = logs
+        .filter(l => new Date(l.date) >= sevenDaysAgo)
+        .reduce((a, b) => a + (parseInt(b.problemsSolved) || 0), 0);
+    
+    if (document.getElementById('stat-week')) {
+        document.getElementById('stat-week').innerText = weekTotal;
     }
-    if (document.getElementById('stat-streak')) document.getElementById('stat-streak').innerText = streak;
 
+    // 3. Calculate Streak (The Fix)
+    let streak = 0;
+    const logDates = new Set(logs.map(l => l.date));
+    
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toLocaleDateString('en-CA');
+
+    // Check if we should start counting from today or yesterday
+    // This prevents the streak from showing 0 if you haven't logged yet today
+    let checkDate = logDates.has(todayStr) ? today : (logDates.has(yesterdayStr) ? yesterday : null);
+
+    if (checkDate) {
+        // Create a new date instance for the loop to avoid mutating the original
+        let loopDate = new Date(checkDate);
+        while (logDates.has(loopDate.toLocaleDateString('en-CA'))) {
+            streak++;
+            loopDate.setDate(loopDate.getDate() - 1);
+        }
+    }
+
+    if (document.getElementById('stat-streak')) {
+        document.getElementById('stat-streak').innerText = streak;
+    }
+
+    // 4. Update Charts and Target UI
     renderCharts(logs);
+    
+    // Ensure Target UI updates whenever dashboard data changes
+    const user = auth.currentUser;
+    if (user) {
+        const targetRef = doc(db, "users", user.uid, "targets", "current");
+        getDoc(targetRef).then(tSnap => {
+            if (tSnap.exists()) {
+                updateTargetUI(tSnap.data().weeklyGoal);
+            }
+        });
+    }
 }
 
 // --- TARGET SYSTEM ---
@@ -379,6 +458,16 @@ window.handleEmailAuth = async () => {
         alert("❌ Error: " + e.message); 
     }
 };
+
+document.getElementById('resource-search-nav')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const query = e.target.value.trim();
+        if (query) {
+            // Redirects to resources page with the search query as a URL parameter
+            window.location.href = `resources.html?search=${encodeURIComponent(query)}`;
+        }
+    }
+});
 
 // Resend verification email
 window.resendVerification = async () => {

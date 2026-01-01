@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CP Resources | Knowledge Base</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f3f4f6;
+            --text: #1f2937;
+            --primary: #2563eb;
+        }
+
+        .dark {
+            --bg: #0b0f1a;
+            --surface: #161b2c;
+            --text: #f3f4f6;
+            --primary: #3b82f6;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card {
+            background: rgba(var(--surface), 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+        }
+
+        .resource-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.2);
+        }
+
+        .category-pill {
+            color: var(--text);
+            border: 1px solid rgba(156, 163, 175, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .category-pill.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        #resource-search {
+            background-color: var(--surface);
+            color: var(--text);
+            border: 1px solid rgba(156, 163, 175, 0.2);
+        }
+
+        #resource-search::placeholder {
+            color: var(--text);
+            opacity: 0.5;
+        }
+
+        /* Favorite/Pin Button Styling */
+        .pin-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            opacity: 0.4;
+            transition: all 0.2s;
+        }
+
+        .resource-card:hover .pin-btn {
+            opacity: 1;
+        }
+
+        .pin-btn:hover {
+            transform: scale(1.2);
+            color: var(--primary);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col transition-colors duration-300">
+    <nav class="max-w-7xl mx-auto px-6 py-4 w-full sticky top-0 z-[90]">
+        <div class="glass-card px-8 py-3 flex justify-between items-center shadow-2xl border-white/10">
+
+            <div class="flex items-center">
+                <button onclick="window.location.href='index.html'"
+                    class="group flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 transition-all duration-300">
+
+                    <div
+                        class="w-11 h-11 bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-[0_8px_20px_rgba(37,99,235,0.3)] group-hover:shadow-[0_8px_25px_rgba(37,99,235,0.5)] group-hover:-translate-x-1 transition-all">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
+                    </div>
+
+                    <div class="hidden sm:block text-left">
+                        <p
+                            class="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] leading-none mb-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                            Exit Portal
+                        </p>
+                        <p class="text-sm font-extrabold tracking-tight group-hover:text-blue-400 transition-colors">
+                            DASHBOARD
+                        </p>
+                    </div>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="h-8 w-[1px] bg-white/10 mr-2"></div>
+                <button onclick="toggleTheme()"
+                    class="w-11 h-11 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30 flex items-center justify-center transition-all group">
+                    <span id="theme-icon" class="text-lg group-hover:rotate-12 transition-transform">☀️</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-8 w-full">
+        <div class="mb-12 text-center">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">Master the <span
+                    class="text-blue-500">Algorithms.</span></h1>
+            <p class="text-slate-500 mb-8 max-w-2xl mx-auto italic text-sm">Curated tools for your journey. Click 📌 to
+                feature a topic.</p>
+
+            <div class="relative max-w-xl mx-auto mb-10">
+                <input type="text" id="resource-search" placeholder="Search topics... (Enter for Google)"
+                    class="w-full p-5 pl-12 rounded-2xl outline-none focus:border-blue-500 transition-all shadow-sm">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">🔍</span>
+            </div>
+        </div>
+
+        <div id="featured-container" class="mb-12 transition-all duration-500"></div>
+
+        <div class="flex flex-wrap gap-3 mb-10 justify-center" id="category-filters">
+            <button class="category-pill active px-6 py-2 rounded-full text-xs font-bold"
+                data-category="all">All</button>
+            <button class="category-pill px-6 py-2 rounded-full text-xs font-bold" data-category="judges">Online
+                Judges</button>
+            <button class="category-pill px-6 py-2 rounded-full text-xs font-bold"
+                data-category="algorithms">Algorithms</button>
+            <button class="category-pill px-6 py-2 rounded-full text-xs font-bold" data-category="blogs">Blogs &
+                Sheets</button>
+            <button class="category-pill px-6 py-2 rounded-full text-xs font-bold" data-category="tools">Tools</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="resources-grid"></div>
+    </main>
+
+    <footer class="mt-auto py-8 text-center text-[10px] font-bold uppercase tracking-widest opacity-50">
+        © 2026 CP Tracker Pro | Knowledge Base
+    </footer>
+
+    <script type="module" src="resources.js"></script>
+    <script>
+        window.toggleTheme = () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            document.getElementById('theme-icon').innerText = isDark ? '☀️' : '🌙';
+        };
+    </script>
+</body>
+
+</html>

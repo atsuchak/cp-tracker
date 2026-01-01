@@ -43,6 +43,16 @@ async function verifyUser(password) {
 
 window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
 
+const formatDriveUrl = (url) => {
+    if (url && url.includes('drive.google.com')) {
+        const fileId = url.split('/d/')[1]?.split('/')[0];
+        if (fileId) {
+            return `https://lh3.googleusercontent.com/u/0/d/${fileId}`;
+        }
+    }
+    return url;
+};
+
 async function loadProfile(uid) {
     try {
         const docSnap = await getDoc(doc(db, "users", uid, "profile", "data"));
@@ -61,8 +71,11 @@ async function loadProfile(uid) {
             document.getElementById('display-username').innerText = `@${data.username || 'username'}`;
 
             // Image Preview
+            const rawUrl = data.photoURL || "";
+            const formattedUrl = formatDriveUrl(rawUrl);
+
             const previewImg = document.getElementById('profile-img-preview');
-            previewImg.src = data.photoURL || `https://ui-avatars.com/api/?name=${getInitials(data.name || "User")}&background=020617&color=3b82f6&bold=true`;
+            previewImg.src = formattedUrl || `https://ui-avatars.com/api/?name=${getInitials(data.name || "User")}&background=020617&color=3b82f6&bold=true`;
         }
     } catch (err) { console.error(err); }
 }
