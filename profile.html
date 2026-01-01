@@ -30,6 +30,7 @@
             background-color: var(--bg);
             color: var(--text);
             font-family: 'Inter', sans-serif;
+            transition: background 0.3s, color 0.3s;
         }
 
         .glass {
@@ -51,10 +52,16 @@
             <a href="index.html" class="text-slate-500 hover:text-blue-500 transition flex items-center gap-2">
                 <span>←</span> Back to Dashboard
             </a>
-            <h1 class="text-2xl font-black mono text-blue-500">USER_PROFILE</h1>
+            <div class="flex items-center gap-4">
+                <button onclick="logout()"
+                    class="text-red-500 hover:bg-red-500/10 px-4 py-2 rounded-xl text-sm font-bold transition">Sign
+                    Out</button>
+                <h1 class="text-2xl font-black mono text-blue-500 uppercase">Profile</h1>
+            </div>
         </div>
 
-        <div class="glass p-10 rounded-3xl shadow-2xl">
+        <div class="glass p-10 rounded-3xl shadow-2xl mb-8">
+            <h3 class="text-xl font-bold mono text-blue-500 mb-6 uppercase">General Info</h3>
             <form id="profile-form" class="space-y-6">
                 <div class="flex flex-col items-center gap-4 mb-8">
                     <img id="profile-img-preview" src="https://ui-avatars.com/api/?name=User"
@@ -95,28 +102,46 @@
             </form>
         </div>
 
-        <div class="glass p-10 rounded-3xl shadow-2xl mt-8 border-t-2 border-t-red-500/10">
-            <h3 class="text-xl font-bold mono text-red-500 mb-6">ACCOUNT_SECURITY</h3>
+        <div class="glass p-10 rounded-3xl shadow-2xl border-t-2 border-t-red-500/10">
+            <h3 class="text-xl font-bold mono text-red-500 mb-6 uppercase">Account & Security</h3>
 
-            <div class="space-y-6">
-                <div
-                    class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
-                    <h4 class="text-sm font-bold uppercase tracking-widest mb-4">Change Password</h4>
+            <div class="space-y-8">
+                <div class="p-6 rounded-2xl bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+                    <h4 class="text-sm font-bold uppercase tracking-widest mb-4">Update Password</h4>
                     <div class="flex flex-col md:flex-row gap-3">
                         <input type="password" id="new-password" placeholder="New Password"
-                            class="flex-grow p-3 rounded-xl bg-white dark:bg-slate-950 border border-transparent focus:border-blue-500 outline-none">
+                            class="flex-grow p-4 rounded-xl bg-white dark:bg-slate-950 border border-transparent focus:border-blue-500 outline-none">
                         <button onclick="updatePasswordHandler()"
-                            class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold transition">Update</button>
+                            class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold transition">Update</button>
                     </div>
                 </div>
 
-                <div class="p-4 rounded-2xl bg-red-500/5 border border-red-500/20">
-                    <h4 class="text-sm font-bold uppercase tracking-widest text-red-500 mb-2">Danger Zone</h4>
-                    <p class="text-xs text-slate-500 mb-4">Once you delete your account, all your CP logs and profile
-                        data will be permanently removed.</p>
-                    <button onclick="deleteAccountHandler()"
-                        class="w-full bg-red-600/10 hover:bg-red-600 text-red-600 hover:text-white border border-red-600 py-3 rounded-xl font-bold transition">Delete
-                        My Account</button>
+                <div class="p-6 rounded-2xl bg-red-500/5 border border-red-500/20">
+                    <h4 class="text-sm font-bold uppercase tracking-widest text-red-500 mb-6">Danger Zone</h4>
+                    
+                    <div class="mb-6">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">Current Password (Required for Reset/Delete)</label>
+                        <input type="password" id="confirm-password" placeholder="Confirm your password"
+                            class="w-full p-4 rounded-xl bg-white dark:bg-slate-950 border border-transparent focus:border-red-500 outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <p class="text-[10px] text-slate-500 px-1">Wipes all CP logs, charts, and streaks.</p>
+                            <button onclick="resetDataHandler()"
+                                class="w-full bg-orange-600/10 hover:bg-orange-600 text-orange-600 hover:text-white border border-orange-600 py-3 rounded-xl font-bold transition text-sm">
+                                Reset All Progress
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <p class="text-[10px] text-slate-500 px-1">Permanently removes your account.</p>
+                            <button onclick="deleteAccountHandler()"
+                                class="w-full bg-red-600/10 hover:bg-red-600 text-red-600 hover:text-white border border-red-600 py-3 rounded-xl font-bold transition text-sm">
+                                Delete Account
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
