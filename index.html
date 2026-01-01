@@ -116,6 +116,30 @@
                     <span class="mono font-bold tracking-tight">DASHBOARD</span>
                 </div>
                 <div class="flex gap-6 items-center">
+                    <div class="relative group">
+                        <button class="text-slate-500 hover:text-blue-500 text-sm font-medium flex items-center gap-1">
+                            Judges <span class="text-[10px]">▼</span>
+                        </button>
+                        <div
+                            class="absolute right-0 mt-2 w-48 glass rounded-xl shadow-xl hidden group-hover:block z-[60] overflow-hidden">
+                            <a href="https://codeforces.com" target="_blank"
+                                class="block px-4 py-2 text-sm hover:bg-blue-500/10 transition">Codeforces</a>
+                            <a href="https://leetcode.com" target="_blank"
+                                class="block px-4 py-2 text-sm hover:bg-blue-500/10 transition">LeetCode</a>
+                            <a href="https://atcoder.jp" target="_blank"
+                                class="block px-4 py-2 text-sm hover:bg-blue-500/10 transition">AtCoder</a>
+                            <a href="https://www.codechef.com" target="_blank"
+                                class="block px-4 py-2 text-sm hover:bg-blue-500/10 transition">CodeChef</a>
+                            <a href="https://cses.fi/problemset/" target="_blank"
+                                class="block px-4 py-2 text-sm hover:bg-blue-500/10 transition">CSES</a>
+                        </div>
+                    </div>
+                    <button onclick="showSection('profile')"
+                        class="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-blue-500 transition">
+                        <img id="nav-avatar" src="https://ui-avatars.com/api/?name=User&background=random"
+                            class="w-full h-full object-cover">
+                    </button>
+                    
                     <button onclick="showSection('add-log')"
                         class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-lg shadow-blue-500/20 transition">+
                         New Log</button>

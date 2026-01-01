@@ -1,3 +1,4 @@
+import { getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -20,12 +21,35 @@ const googleProvider = new GoogleAuthProvider();
 let currentLogs = [];
 let charts = {};
 
+const getInitials = (name) => {
+    if (!name) return "CP";
+    return name.split(' ')
+               .map(word => word[0])
+               .join('')
+               .toUpperCase()
+               .slice(0, 2);
+};
+
 // --- Auth State ---
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         document.getElementById('auth-view').classList.add('hidden');
         document.getElementById('app-view').classList.remove('hidden');
         loadUserData(user.uid);
+        
+        const docSnap = await getDoc(doc(db, "users", user.uid, "profile", "data"));
+        const navAvatar = document.getElementById('nav-avatar');
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // Priority 1: Custom Image URL | Priority 2: Initials from Name | Priority 3: Default US
+            if (data.photoURL) {
+                navAvatar.src = data.photoURL;
+            } else {
+                const initials = getInitials(data.name);
+                navAvatar.src = `https://ui-avatars.com/api/?name=${initials}&background=random&color=fff`;
+            }
+        }
     } else {
         document.getElementById('auth-view').classList.remove('hidden');
         document.getElementById('app-view').classList.add('hidden');
@@ -45,6 +69,11 @@ window.toggleAuthMode = () => {
 };
 
 window.showSection = (section) => {
+    if (section === 'profile') {
+        window.location.href = 'profile.html'; // Redirect to the new page
+        return;
+    }
+    
     const modal = document.getElementById('add-log-view');
     if (section === 'add-log') {
         modal.classList.remove('hidden');
@@ -132,7 +161,7 @@ function renderCharts(logs) {
     if (charts.doughnut) charts.doughnut.destroy();
 
     const activityData = [...logs].reverse();
-    
+
     const chartOptions = {
         responsive: true,
         maintainAspectRatio: false, // This is crucial to stop the growing glitch
