@@ -2,7 +2,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 2. Firebase Config (Keep your credentials)
 const firebaseConfig = {
     apiKey: "AIzaSyD7Rt59VPJpjqE_psCLubb96jtxX_mXGhQ",
     authDomain: "cp-tracker-782425.firebaseapp.com",
@@ -13,13 +12,15 @@ const firebaseConfig = {
     measurementId: "G-5Y5M7KGXV2"
 };
 
-// 3. Initialize Services
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-// --- Auth State Logic ---
+let currentLogs = [];
+let charts = {};
+
+// --- Auth State ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
         document.getElementById('auth-view').classList.add('hidden');
@@ -31,7 +32,7 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// --- UI Logic ---
+// --- Navigation ---
 window.toggleAuthMode = () => {
     const btn = document.getElementById('primary-auth-btn');
     const toggleBtn = document.getElementById('auth-toggle-btn');
@@ -44,146 +45,149 @@ window.toggleAuthMode = () => {
 };
 
 window.showSection = (section) => {
-    if (section === 'add-log') document.getElementById('add-log-view').classList.remove('hidden');
-    else document.getElementById('add-log-view').classList.add('hidden');
+    const modal = document.getElementById('add-log-view');
+    if (section === 'add-log') {
+        modal.classList.remove('hidden');
+        document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+    } else {
+        modal.classList.add('hidden');
+    }
 };
 
-// --- Firebase Operations ---
+// --- Theme Management ---
+window.toggleTheme = () => {
+    const html = document.documentElement;
+    const icon = document.getElementById('theme-icon');
+    const isDark = html.classList.toggle('dark');
+    
+    icon.innerText = isDark ? '☀️' : '🌙';
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    if (currentLogs.length > 0) renderCharts(currentLogs); 
+};
+
+// --- Auth Operations ---
 window.handleEmailAuth = async () => {
     const email = document.getElementById('email').value;
     const pass = document.getElementById('password').value;
     const isLogin = document.getElementById('primary-auth-btn').innerText === 'Login';
-    
     try {
         if (isLogin) await signInWithEmailAndPassword(auth, email, pass);
         else await createUserWithEmailAndPassword(auth, email, pass);
     } catch (e) { alert(e.message); }
 };
 
-// window.handleGoogleAuth = () => signInWithPopup(auth, googleProvider);
 window.handleGoogleAuth = async () => {
     try {
-        const result = await signInWithPopup(auth, googleProvider);
-        // The helper onAuthStateChanged will handle the redirect automatically
-        console.log("User signed in:", result.user);
-    } catch (error) {
-        console.error("Google Auth Error:", error.code, error.message);
-        
-        // Handle specific common errors
-        if (error.code === 'auth/popup-blocked') {
-            alert("Please allow popups for this website to sign in with Google.");
-        } else if (error.code === 'auth/cancelled-popup-request') {
-            console.log("Popup closed before finishing.");
-        } else {
-            alert("Google Sign-in failed: " + error.message);
-        }
-    }
+        await signInWithPopup(auth, googleProvider);
+    } catch (e) { alert(e.message); }
 };
+
 window.logout = () => signOut(auth);
 
-// --- Data Visualization ---
+// --- Data & Charts ---
 async function loadUserData(userId) {
     const q = query(collection(db, `users/${userId}/logs`), orderBy("date", "desc"), limit(30));
     const querySnapshot = await getDocs(q);
-    const logs = [];
-    querySnapshot.forEach(doc => logs.push(doc.data()));
-
-    updateDashboard(logs);
+    currentLogs = [];
+    querySnapshot.forEach(doc => currentLogs.push(doc.data()));
+    updateDashboard(currentLogs);
 }
 
 function updateDashboard(logs) {
-    // 1. Today's Solved
     const todayStr = new Date().toISOString().split('T')[0];
+    
+    // Today Stat
     const todaySolved = logs.filter(l => l.date === todayStr).reduce((a, b) => a + parseInt(b.problemsSolved), 0);
     document.getElementById('stat-today').innerText = todaySolved;
 
-    // 2. Last 7 Days Total
+    // Week Stat
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const weekTotal = logs
-        .filter(l => new Date(l.date) >= sevenDaysAgo)
-        .reduce((a, b) => a + parseInt(b.problemsSolved), 0);
+    const weekTotal = logs.filter(l => new Date(l.date) >= sevenDaysAgo).reduce((a, b) => a + parseInt(b.problemsSolved), 0);
     document.getElementById('stat-week').innerText = weekTotal;
 
-    // 3. Current Streak
+    // Streak Stat
     let streak = 0;
     let checkDate = new Date();
     const logDates = new Set(logs.map(l => l.date));
-
     while (logDates.has(checkDate.toISOString().split('T')[0])) {
         streak++;
         checkDate.setDate(checkDate.getDate() - 1);
     }
-    document.getElementById('stat-streak').innerText = `${streak}🔥`;
+    document.getElementById('stat-streak').innerText = streak;
 
     renderCharts(logs);
 }
 
-// Chart.js Implementations
-let charts = {};
 function renderCharts(logs) {
-    const ctxLine = document.getElementById('lineChart').getContext('2d');
-    const ctxBar = document.getElementById('barChart').getContext('2d');
-    const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
+    const isDark = document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+    Chart.defaults.color = textColor;
+    Chart.defaults.borderColor = gridColor;
 
     if (charts.line) charts.line.destroy();
     if (charts.bar) charts.bar.destroy();
     if (charts.doughnut) charts.doughnut.destroy();
 
-    // --- Line Chart (Activity) ---
-    const activityData = logs.slice().reverse();
-    charts.line = new Chart(ctxLine, {
+    const activityData = [...logs].reverse();
+    
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false, // This is crucial to stop the growing glitch
+        animation: {
+            duration: 0 // Speeds up rendering and prevents animation-frame loops
+        },
+        plugins: {
+            legend: {
+                display: (logs.length > 0) // Hide legend if no data
+            }
+        }
+    };
+
+    // Line Chart
+    charts.line = new Chart(document.getElementById('lineChart'), {
         type: 'line',
         data: {
             labels: activityData.map(l => l.date),
             datasets: [{
-                label: 'Solved',
+                label: 'Problems',
                 data: activityData.map(l => l.problemsSolved),
                 borderColor: '#3b82f6',
                 backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                fill: true,
-                tension: 0.3
+                fill: true, tension: 0.4
             }]
         },
         options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // --- Bar Chart (Topics) ---
+    // Bar Chart
     const topicMap = {};
-    logs.forEach(l => l.topics.forEach(t => topicMap[t] = (topicMap[t] || 0) + 1));
-    
-    charts.bar = new Chart(ctxBar, {
+    logs.forEach(l => l.topics.forEach(t => { if(t) topicMap[t] = (topicMap[t] || 0) + 1 }));
+    charts.bar = new Chart(document.getElementById('barChart'), {
         type: 'bar',
         data: {
             labels: Object.keys(topicMap),
-            datasets: [{
-                label: 'Frequency',
-                data: Object.values(topicMap),
-                backgroundColor: '#8b5cf6'
-            }]
+            datasets: [{ data: Object.values(topicMap), backgroundColor: '#8b5cf6', borderRadius: 8 }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
-    // --- Doughnut Chart (Difficulty) ---
+    // Doughnut Chart
     const diffMap = { Easy: 0, Medium: 0, Hard: 0 };
-    logs.forEach(l => diffMap[l.difficulty] = (diffMap[l.difficulty] || 0) + 1);
-
-    charts.doughnut = new Chart(ctxDoughnut, {
+    logs.forEach(l => diffMap[l.difficulty]++);
+    charts.doughnut = new Chart(document.getElementById('doughnutChart'), {
         type: 'doughnut',
         data: {
             labels: Object.keys(diffMap),
-            datasets: [{
-                data: Object.values(diffMap),
-                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
-                borderWidth: 0
-            }]
+            datasets: [{ data: Object.values(diffMap), backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }]
         },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+        options: { responsive: true, maintainAspectRatio: false, cutout: '75%' }
     });
 }
 
-// --- Form Submission ---
+// --- Log Submission ---
 document.getElementById('log-form').onsubmit = async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
@@ -201,5 +205,5 @@ document.getElementById('log-form').onsubmit = async (e) => {
         showSection('dashboard');
         loadUserData(user.uid);
         e.target.reset();
-    } catch (err) { alert("Error saving log: " + err.message); }
+    } catch (err) { alert(err.message); }
 };
